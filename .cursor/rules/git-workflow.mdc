@@ -1,0 +1,10 @@
+---
+description: Branch and commit workflow for every phase
+alwaysApply: true
+---
+
+- Before changing any file, check `git status --short` and the current branch.
+- Each phase from IMPLEMENTATION_PLAN.md is built on its own branch, named in the plan's branch table. Create it from an up-to-date `main` before the first edit.
+- Never commit directly to `main`. Never merge, rebase, or push unless the user explicitly asks.
+- If there are uncommitted changes you did not make, or the previous phase's branch is not yet merged into `main`, stop and report instead of continuing.
+- At the end of a phase, report the branch name, commit hashes, and checks run, then stop for review.

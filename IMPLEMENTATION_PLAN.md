@@ -6,7 +6,7 @@ Build a responsive browser game in which the player sees a randomly generated ho
 
 Copy this file and the `mockups/` directory into the project root. Open the project in Cursor and use this prompt in Agent mode.
 
-> Read @IMPLEMENTATION_PLAN.md and inspect the linked mockups. Check the working tree and existing setup, then implement the first unfinished phase only. Follow the commit and review workflow in the plan. After the phase passes its checks, commit the scoped changes and report the commit hash, what works, and what you verified. Stop at that checkpoint so I can review it before asking you to continue.
+> Read @IMPLEMENTATION_PLAN.md and inspect the linked mockups. Check the working tree, current branch, and existing setup, then implement the first unfinished phase only. Follow the branch, commit, and review workflow in the plan: start from an up-to-date `main` and create that phase's branch before changing any file. After the phase passes its checks, commit the scoped changes on the phase branch and report the branch name, commit hash, what works, and what you verified. Do not merge into `main`. Stop at that checkpoint so I can review it before asking you to continue.
 
 ## Requirements and settled choices
 
@@ -100,7 +100,22 @@ The game transitions to Complete as soon as round six's result is recorded. A fr
 
 ## Phase and commit workflow
 
-At the start of each phase, read `git status --short` and the recent commit history. Work from the last verified checkpoint and preserve any existing changes. Treat the commit messages below as examples and adapt them to the changes actually made.
+Each phase is developed on its own branch, reviewed, and merged into `main` before the next phase starts. `main` only ever holds reviewed phases. Phase 1 was committed directly on `main` before this workflow was added; it counts as finished.
+
+| Phase | Branch                          |
+| ----- | ------------------------------- |
+| 1     | `phase-1-setup` (on `main`)     |
+| 2     | `phase-2-roster-schedule`       |
+| 3     | `phase-3-simulation-state`      |
+| 4     | `phase-4-playable-race`         |
+| 5     | `phase-5-responsive`            |
+| 6     | `phase-6-verification-delivery` |
+
+**Starting a phase.** Read `git status --short`, the current branch, `git branch`, and the recent history of `main`. A phase is finished when its branch has been merged into `main`. If the working tree has uncommitted changes, stop and report them instead of continuing. If the previous phase's branch exists but is not merged, stop and say that it is waiting for review. Otherwise switch to `main` and create the next phase's branch from it (`git switch main && git switch -c <branch>`) before changing any file. If you are already on the correct unmerged branch with work in progress, continue there.
+
+**During a phase.** Commit only on the phase branch. Never commit to `main`, merge, rebase, or push unless the user asks. Treat the commit messages below as examples and adapt them to the changes actually made.
+
+**Ending a phase.** Report the branch name and commit hashes. The user then reviews the branch against `main` (`git diff main...HEAD`), asks for fixes on the same branch, and merges with `git switch main && git merge --no-ff <branch>`. Merge only when the user explicitly asks you to.
 
 An atomic commit has one purpose and includes the tests and configuration needed to verify that change. Run the phase checks, review the diff, stage only the relevant changes, and inspect `git diff --cached` before committing. Leave each checkpoint buildable and keep its existing tests and lint green. If a phase has independently useful changes, give them separate commits and verify each one. At the end of the phase, report the commit hash or hashes, checks run, and what to try locally.
 
