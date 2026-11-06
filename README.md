@@ -12,6 +12,7 @@ A browser game project built with Vue 3, TypeScript, Vite, and Pinia.
 | `npm run type-check` | Type-check without emitting files           |
 | `npm run lint`       | Run ESLint                                  |
 | `npm run format`     | Format with Prettier                        |
+| `npm run test`       | Run unit tests (Vitest)                     |
 
 ## Project layout
 

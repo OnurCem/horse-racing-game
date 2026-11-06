@@ -1,0 +1,23 @@
+/** Neutral horse names (one per stable slot when paired with a shuffled palette). */
+export const HORSE_NAMES: readonly string[] = [
+  'Copper Dawn',
+  'Silver Arrow',
+  'Midnight Run',
+  'Northern Star',
+  'Quiet Thunder',
+  'Willow Wind',
+  'Golden Step',
+  'River Stone',
+  'Swift Current',
+  'Autumn Trail',
+  'Cloud Dancer',
+  'Eagle Ridge',
+  'Summer Field',
+  'Forest Path',
+  'Meadow Lark',
+  'Cedar Spirit',
+  'Mountain Mist',
+  'Thunder Bay',
+  'Open Sky',
+  'Wild Bloom',
+] as const
