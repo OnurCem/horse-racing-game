@@ -8,6 +8,8 @@ Copy this file and the `mockups/` directory into the project root. Open the proj
 
 > Read @IMPLEMENTATION_PLAN.md and inspect the linked mockups. Check the working tree, current branch, and existing setup, then implement the first unfinished phase only. Follow the branch, commit, and review workflow in the plan: start from an up-to-date `main` and create that phase's branch before changing any file. After the phase passes its checks, commit the scoped changes on the phase branch and report the branch name, commit hash, what works, and what you verified. Do not merge into `main`. Stop at that checkpoint so I can review it before asking you to continue.
 
+After each phase, review it in a new chat with the review prompt in **Review stage** before merging.
+
 ## Requirements and settled choices
 
 | Area             | Behavior                                                                                                                                                                                                                                                      | Basis                                                                                                                                                    |
@@ -115,7 +117,33 @@ Each phase is developed on its own branch, reviewed, and merged into `main` befo
 
 **During a phase.** Commit only on the phase branch. Never commit to `main`, merge, rebase, or push unless the user asks. Treat the commit messages below as examples and adapt them to the changes actually made.
 
-**Ending a phase.** Report the branch name and commit hashes. The user then reviews the branch against `main` (`git diff main...HEAD`), asks for fixes on the same branch, and merges with `git switch main && git merge --no-ff <branch>`. Merge only when the user explicitly asks you to.
+**Ending a phase.** Report the branch name and commit hashes, then stop. The phase is not finished until it passes the review stage below and the user merges it. Merge only when the user explicitly asks you to.
+
+### Review stage
+
+Every phase goes through this loop before it is merged:
+
+1. **Build.** The phase chat implements the phase on its branch and stops at the checkpoint.
+2. **Review.** The user opens a new chat, separate from the one that wrote the code, on the phase branch, and pastes the review prompt below. The reviewer reads and runs checks only; it does not edit files.
+3. **Fix.** The user pastes the must-fix findings back into the phase chat. The phase chat fixes them on the same branch in focused commits, such as `fix: guard resume while not paused`, and reruns the phase checks.
+4. **Re-review.** If any must-fix finding changed code, run the review prompt again in the review chat with "Re-review: check that the previous must-fix findings are resolved and nothing regressed."
+5. **Verify and merge.** The user runs the phase's **Check** by hand, then merges with `git switch main && git merge --no-ff <branch>` and pushes `main`. The next phase starts in a new chat.
+
+Optional findings can be fixed in the same loop, deferred to a later phase, or dropped. Note deferred ones in the phase report so they are not lost.
+
+**Review prompt**
+
+> Review the changes on this branch against `main` (`git diff main...HEAD`) for Phase N of @IMPLEMENTATION_PLAN.md. Do not edit any files.
+>
+> 1. Correctness: bugs, edge cases, state transitions the state table forbids, and timing errors around pause, resume, and the inter-round hold.
+> 2. Plan conformance: everything Phase N asks for is present, nothing from later phases leaked in, and the **Project structure** is followed (no Vue or Pinia imports in `src/domain` or `src/race`).
+> 3. Tests: the Phase N **Check** and the relevant **Acceptance tests** rows are covered, tests assert behavior rather than implementation details, and randomness and time are injected rather than mocked globally.
+> 4. Maintainability: naming, component size, duplication, types (no `any`), and dead code.
+> 5. Brief rules this phase touches: 20 horses, unique colors, condition 1–100, six rounds at the fixed distances, and 10 horses per round.
+>
+> Run lint, type-check, and the unit tests (plus any end-to-end or visual suites that exist) and report the results. List findings ranked by severity with `file:line`, what is wrong, and a concrete fix. Mark each one **must-fix** or **optional**, and end with a verdict: **ready to merge** or **needs fixes**.
+
+A second, independent reviewer such as Claude Code's `/code-review high main` on the phase branch can be run alongside this prompt. It checks for bugs, not plan conformance.
 
 An atomic commit has one purpose and includes the tests and configuration needed to verify that change. Run the phase checks, review the diff, stage only the relevant changes, and inspect `git diff --cached` before committing. Leave each checkpoint buildable and keep its existing tests and lint green. If a phase has independently useful changes, give them separate commits and verify each one. At the end of the phase, report the commit hash or hashes, checks run, and what to try locally.
 

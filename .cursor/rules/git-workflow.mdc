@@ -8,3 +8,5 @@ alwaysApply: true
 - Never commit directly to `main`. Never merge, rebase, or push unless the user explicitly asks.
 - If there are uncommitted changes you did not make, or the previous phase's branch is not yet merged into `main`, stop and report instead of continuing.
 - At the end of a phase, report the branch name, commit hashes, and checks run, then stop for review.
+- A review chat (one asked to review a phase branch) does not edit files, create branches, or commit. It follows the Review stage in IMPLEMENTATION_PLAN.md and ends with a verdict.
+- Fixes from a review are committed on the same phase branch, never on `main`.
