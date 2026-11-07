@@ -35,20 +35,21 @@ export function createDefaultRandom(): RandomSource {
 /** Deterministic RNG (mulberry32) for tests and reproducible browser fixtures. */
 export function createSeededRandom(seed: number): RandomSource {
   let state = seed >>> 0
+
+  /** One mulberry32 step: advances the state and returns a mixed float in [0, 1). */
+  const next = (): number => {
+    state = (state + 0x6d2b79f5) >>> 0
+    let t = Math.imul(state ^ (state >>> 15), 1 | state)
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+
   return {
     intInclusive(min: number, max: number): number {
-      state = (state + 0x6d2b79f5) >>> 0
-      let t = Math.imul(state ^ (state >>> 15), 1 | state)
-      t ^= t + Math.imul(t ^ (t >>> 7), 61 | t)
-      const u = (t ^ (t >>> 14)) >>> 0
       const lo = Math.ceil(min)
       const hi = Math.floor(max)
-      const span = hi - lo + 1
-      return lo + (u % span)
+      return Math.floor(next() * (hi - lo + 1)) + lo
     },
-    float01(): number {
-      state = (state + 0x6d2b79f5) >>> 0
-      return (state >>> 0) / 4294967296
-    },
+    float01: next,
   }
 }
