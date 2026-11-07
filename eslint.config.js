@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint'
 import vueParser from 'vue-eslint-parser'
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'coverage/**'] },
+  { ignores: ['dist/**', 'node_modules/**', 'coverage/**', 'tests/visual/**/*.png'] },
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   {
@@ -32,7 +32,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['tests/**/*.ts', 'vitest.config.ts'],
+    files: ['tests/**/*.ts', 'vitest.config.ts', 'playwright.config.ts'],
     languageOptions: {
       globals: {
         ...globals.node,

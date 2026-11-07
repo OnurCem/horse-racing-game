@@ -11,7 +11,11 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test --project e2e",
+    "test:visual": "bash scripts/run-visual-tests.sh run",
+    "test:visual:local": "playwright test --project visual-desktop --project visual-mobile",
+    "test:visual:update": "bash scripts/run-visual-tests.sh update"
   },
   "dependencies": {
     "pinia": "^3.0.4",
@@ -30,6 +34,7 @@
     "prettier": "^3.6.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
+    "@playwright/test": "1.56.1",
     "vitest": "^4.0.8",
     "vite": "^7.2.2",
     "vue-eslint-parser": "^10.2.0",
