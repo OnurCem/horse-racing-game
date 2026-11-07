@@ -70,15 +70,15 @@ const onPrimary = (): void => {
   <header class="race-controls">
     <h2 class="race-heading">{{ heading }}</h2>
     <div class="race-actions">
-      <button type="button" class="btn btn-secondary" :disabled="!canGenerate" @click="emit('generate')">
-        Generate
-      </button>
       <button
         type="button"
-        class="btn btn-primary"
-        :disabled="primaryDisabled"
-        @click="onPrimary"
+        class="btn btn-secondary"
+        :disabled="!canGenerate"
+        @click="emit('generate')"
       >
+        Generate
+      </button>
+      <button type="button" class="btn btn-primary" :disabled="primaryDisabled" @click="onPrimary">
         {{ primaryLabel }}
       </button>
     </div>

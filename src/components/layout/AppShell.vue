@@ -14,7 +14,6 @@ const { roster, schedule, status, activeRound, activeRoundIndex, results } = sto
 
 const { frameProgress } = useRaceRunner()
 const prefersReducedMotion = useReducedMotion()
-
 </script>
 
 <template>

@@ -14,8 +14,11 @@ if [[ "$MODE" == "update" ]]; then
   PLAYWRIGHT_ARGS="--update-snapshots ${PLAYWRIGHT_ARGS}"
 fi
 
+# The anonymous volume on /work/node_modules keeps the container's Linux
+# install separate from the host's, so `npm ci` here never replaces host binaries.
 docker run --rm \
   -v "$ROOT:/work" \
+  -v /work/node_modules \
   -w /work \
   -e CI=1 \
   -e VITE_BASE="${VITE_BASE:-/}" \

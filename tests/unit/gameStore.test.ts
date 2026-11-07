@@ -1,5 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { isReactive } from 'vue'
 
 import { DEFAULT_INTER_ROUND_HOLD_MS } from '../../src/race/raceClock'
 import { useGameStore } from '../../src/stores/game'
@@ -14,11 +15,64 @@ describe('useGameStore', () => {
   function setupStore(seed = 42) {
     const store = useGameStore()
     const random = createTestRandom(seed)
-    store.loadRoster(random)
     const time = new ManualTimeSource()
-    store.attachClock(time)
+    store.initialize({ random, timeSource: time })
     return { store, time, random }
   }
+
+  it('initializes the roster and a working clock without any component', () => {
+    const store = useGameStore()
+    store.initialize()
+    expect(store.roster).toHaveLength(20)
+
+    store.generateSchedule()
+    store.start()
+    expect(store.status).toBe('running')
+    expect(store.currentSimulation?.round).toBe(1)
+  })
+
+  it('keeps the clock, random source, and simulation out of Vue reactivity', () => {
+    const { store } = setupStore()
+    store.generateSchedule()
+    store.start()
+
+    expect(isReactive(store.clock)).toBe(false)
+    expect(isReactive(store.random)).toBe(false)
+    expect(isReactive(store.currentSimulation)).toBe(false)
+  })
+
+  it('completes on the last scheduled round', () => {
+    const { store, time } = setupStore(11)
+    store.generateSchedule()
+    store.start()
+
+    for (let round = 1; round <= store.schedule.length; round += 1) {
+      expect(store.isFinalRound).toBe(round === store.schedule.length)
+      time.advance(store.currentSimulation!.lastFinishTimeMs)
+      store.syncFromClock()
+      time.advance(DEFAULT_INTER_ROUND_HOLD_MS)
+      store.syncFromClock()
+    }
+
+    expect(store.status).toBe('complete')
+    expect(store.results).toHaveLength(store.schedule.length)
+  })
+
+  it('records a finished round and freezes the hold when paused late', () => {
+    const { store, time } = setupStore(4)
+    store.generateSchedule()
+    store.start()
+
+    time.advance(store.currentSimulation!.lastFinishTimeMs + DEFAULT_INTER_ROUND_HOLD_MS * 3)
+    store.pause()
+
+    expect(store.results).toHaveLength(1)
+    expect(store.clock.getPhase()).toBe('hold')
+    expect(store.clock.isPaused()).toBe(true)
+    time.advance(10_000)
+    store.syncFromClock()
+    expect(store.activeRound?.round).toBe(1)
+  })
 
   it('guards start until a schedule exists and guards generate while running', () => {
     const { store } = setupStore()

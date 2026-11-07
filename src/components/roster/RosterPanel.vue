@@ -3,14 +3,14 @@ import { computed, ref, watch } from 'vue'
 
 import CollapsibleSection from '../layout/CollapsibleSection.vue'
 import RosterTable from './RosterTable.vue'
-import { useMatchMedia } from '../../composables/useMatchMedia'
+import { NARROW_LAYOUT_QUERY, useMatchMedia } from '../../composables/useMatchMedia'
 import type { Horse } from '../../domain/types'
 
 const props = defineProps<{
   roster: readonly Horse[]
 }>()
 
-const isNarrow = useMatchMedia('(max-width: 899px)')
+const isNarrow = useMatchMedia(NARROW_LAYOUT_QUERY)
 
 const rosterExpanded = ref(true)
 
@@ -55,11 +55,7 @@ const showCollapsibleChrome = computed(() => isNarrow.value)
           {{ rosterExpanded ? 'Hide roster' : 'Show roster' }}
         </button>
       </div>
-      <RosterTable
-        v-show="rosterExpanded"
-        id="roster-table-body"
-        :roster="roster"
-      />
+      <RosterTable v-show="rosterExpanded" id="roster-table-body" :roster="roster" />
     </template>
   </section>
 </template>

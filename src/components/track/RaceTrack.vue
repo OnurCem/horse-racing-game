@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
-import type { Horse, ScheduledRound } from '../../domain/types'
+import type { GameStatus, Horse, ScheduledRound } from '../../domain/types'
 import type { FrameLaneProgress } from '../../composables/useRaceRunner'
 import TrackLane from './TrackLane.vue'
 
 const props = defineProps<{
-  status: string
+  status: GameStatus
   activeRound: ScheduledRound | null
   roster: readonly Horse[]
   frameProgress: FrameLaneProgress[]
@@ -29,9 +29,7 @@ const lanes = computed(() => {
     }))
   }
 
-  const progressByLane = new Map(
-    props.frameProgress.map((row) => [row.lane, row.progressPercent]),
-  )
+  const progressByLane = new Map(props.frameProgress.map((row) => [row.lane, row.progressPercent]))
 
   return props.activeRound.entries.map((entry) => ({
     lane: entry.lane,

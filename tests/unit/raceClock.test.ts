@@ -34,6 +34,24 @@ describe('RaceClock', () => {
     expect(clock.isRoundComplete()).toBe(true)
   })
 
+  it('stays paused when a new phase starts while paused', () => {
+    const time = new ManualTimeSource()
+    const clock = new RaceClock(time)
+
+    clock.startRacing(1000)
+    time.advance(1000)
+    clock.pause()
+    clock.startHold(DEFAULT_INTER_ROUND_HOLD_MS)
+    expect(clock.isPaused()).toBe(true)
+
+    time.advance(5000)
+    expect(clock.getPhaseElapsedMs()).toBe(0)
+
+    clock.resume()
+    time.advance(DEFAULT_INTER_ROUND_HOLD_MS)
+    expect(clock.isHoldComplete()).toBe(true)
+  })
+
   it('pauses and resumes during the inter-round hold', () => {
     const time = new ManualTimeSource()
     const clock = new RaceClock(time)

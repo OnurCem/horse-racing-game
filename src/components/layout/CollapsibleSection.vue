@@ -23,11 +23,7 @@ const emit = defineEmits<{
       <span class="collapsible-title">{{ heading }}</span>
       <span class="collapsible-chevron" aria-hidden="true">{{ expanded ? '▴' : '▾' }}</span>
     </button>
-    <div
-      v-show="expanded"
-      :id="`${panelId}-body`"
-      class="collapsible-body"
-    >
+    <div v-show="expanded" :id="`${panelId}-body`" class="collapsible-body">
       <slot />
     </div>
   </section>

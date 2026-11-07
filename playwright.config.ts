@@ -11,12 +11,14 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
-  snapshotPathTemplate:
-    '{testDir}/{testFileDir}/{testFileName}-snapshots/{arg}-{projectName}{ext}',
+  snapshotPathTemplate: '{testDir}/{testFileDir}/{testFileName}-snapshots/{arg}-{projectName}{ext}',
   expect: {
     toHaveScreenshot: {
       animations: 'disabled',
-      maxDiffPixelRatio: 0.01,
+      // Screenshots only run in the pinned Playwright container, where rendering is
+      // deterministic, so no differing pixels are allowed. A looser ratio let a
+      // different roster and race pass unnoticed.
+      maxDiffPixels: 0,
     },
   },
   use: {
@@ -56,6 +58,8 @@ export default defineConfig({
     env: {
       ...process.env,
       VITE_BASE: repoBase,
+      // Builds the ?seed= / ?test=1 hooks into this bundle only; deployed builds omit them.
+      VITE_ENABLE_TEST_HOOKS: '1',
     },
   },
 })

@@ -7,6 +7,10 @@ function readMatches(query: string): boolean {
   return window.matchMedia(query).matches
 }
 
+/** Single-column layout breakpoint shared by the panels and AppShell's CSS. */
+export const NARROW_LAYOUT_QUERY = '(max-width: 899px)'
+
+/** Reactive `matchMedia` result, read synchronously and kept in sync while mounted. */
 export function useMatchMedia(query: string): Ref<boolean> {
   const matches = ref(readMatches(query))
 

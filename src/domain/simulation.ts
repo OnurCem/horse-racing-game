@@ -140,8 +140,7 @@ export function rankByFinishTime(simulation: RoundSimulation): FinishPlacement[]
 /** True when mid-race progress ordering differs from finish ranking (lead change). */
 export function hasLeadChangeAtTime(simulation: RoundSimulation, timeMs: number): boolean {
   const orderAtTime = [...simulation.lanes].sort((a, b) => {
-    const diff =
-      progressPercentAtTime(b, timeMs) - progressPercentAtTime(a, timeMs)
+    const diff = progressPercentAtTime(b, timeMs) - progressPercentAtTime(a, timeMs)
     if (diff !== 0) {
       return diff
     }

@@ -14,19 +14,19 @@ A responsive browser game: generate a six-round schedule from a roster of 20 hor
 
 ## Scripts
 
-| Command                    | Description                                              |
-| -------------------------- | -------------------------------------------------------- |
-| `npm run dev`              | Dev server (base `/`)                                    |
-| `npm run build`            | Production build (`VITE_BASE` optional, default `/`)     |
-| `npm run preview`          | Preview the production build                             |
-| `npm run type-check`       | Type-check without emitting                              |
-| `npm run lint`             | ESLint                                                   |
-| `npm run format`           | Prettier                                                 |
-| `npm run test`             | Vitest unit suite                                        |
-| `npm run test:e2e`         | Playwright browser flows                                 |
-| `npm run test:visual`      | Visual snapshots in the Playwright Docker image          |
-| `npm run test:visual:local`| Visual snapshots on the host (Chromium required)         |
-| `npm run test:visual:update` | Refresh baselines inside Docker                        |
+| Command                      | Description                                          |
+| ---------------------------- | ---------------------------------------------------- |
+| `npm run dev`                | Dev server (base `/`)                                |
+| `npm run build`              | Production build (`VITE_BASE` optional, default `/`) |
+| `npm run preview`            | Preview the production build                         |
+| `npm run type-check`         | Type-check without emitting                          |
+| `npm run lint`               | ESLint                                               |
+| `npm run format`             | Prettier                                             |
+| `npm run test`               | Vitest unit suite                                    |
+| `npm run test:e2e`           | Playwright browser flows                             |
+| `npm run test:visual`        | Visual snapshots in the Playwright Docker image      |
+| `npm run test:visual:local`  | Visual snapshots on the host (Chromium required)     |
+| `npm run test:visual:update` | Refresh baselines inside Docker                      |
 
 For GitHub Pages, build with `VITE_BASE=/horse-racing-game/ npm run build`.
 
@@ -34,7 +34,7 @@ For GitHub Pages, build with `VITE_BASE=/horse-racing-game/ npm run build`.
 
 Pure game logic lives under `src/domain` and `src/race` (no Vue imports). Pinia holds discrete game state; `useRaceRunner` drives animation via `requestAnimationFrame` without storing per-frame data in the store. See `IMPLEMENTATION_PLAN.md` for the full structure.
 
-Browser tests accept `?seed=` for a deterministic roster and `?test=1` for a manual race clock exposed as `window.__HORSE_RACING_TEST__` (used by Playwright only).
+Builds made with `VITE_ENABLE_TEST_HOOKS=1` accept `?seed=` for a deterministic roster and `?test=1` for a manual race clock exposed as `window.__HORSE_RACING_TEST__`. Playwright sets the flag when it builds the app; the deployed build has no test hooks. If you reuse a local preview server for Playwright, start it from a build made with the flag.
 
 ## Assumptions
 
