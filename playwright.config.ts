@@ -24,7 +24,8 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
-    reducedMotion: 'reduce',
+    // Default motion, so the main animation path is what the suites exercise;
+    // the reduced-motion e2e test opts in on its own.
   },
   projects: [
     {
