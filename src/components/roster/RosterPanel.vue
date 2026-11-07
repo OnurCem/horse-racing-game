@@ -55,11 +55,7 @@ const showCollapsibleChrome = computed(() => isNarrow.value)
           {{ rosterExpanded ? 'Hide roster' : 'Show roster' }}
         </button>
       </div>
-      <RosterTable
-        v-show="rosterExpanded"
-        id="roster-table-body"
-        :roster="roster"
-      />
+      <RosterTable v-show="rosterExpanded" id="roster-table-body" :roster="roster" />
     </template>
   </section>
 </template>

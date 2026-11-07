@@ -70,9 +70,7 @@ const toggleRound = (round: number): void => {
           <template v-if="row.state === 'completed'">✓</template>
           <template v-else-if="row.state === 'current'">●</template>
         </span>
-        <span>
-          Round {{ row.item.round }} · {{ row.item.distanceMeters.toLocaleString() }} m
-        </span>
+        <span> Round {{ row.item.round }} · {{ row.item.distanceMeters.toLocaleString() }} m </span>
         <span v-if="row.state === 'current'" class="visually-hidden">now running</span>
       </button>
       <ul v-if="expandedRound === row.item.round" :id="row.entrantsId" class="entrant-list">

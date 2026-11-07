@@ -22,7 +22,10 @@ describe('createSeededRandom', () => {
     }
 
     const deltas = new Set(
-      values.slice(1).map((value, i) => (value - values[i]! + 1) % 1).map((d) => d.toFixed(3)),
+      values
+        .slice(1)
+        .map((value, i) => (value - values[i]! + 1) % 1)
+        .map((d) => d.toFixed(3)),
     )
     expect(deltas.size).toBeGreaterThan(100)
 

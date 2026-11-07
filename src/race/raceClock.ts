@@ -87,15 +87,13 @@ export class RaceClock {
 
   isRoundComplete(): boolean {
     return (
-      this.phase === 'racing' &&
-      this.getPhaseElapsedMs() + TIME_EPSILON_MS >= this.phaseDurationMs
+      this.phase === 'racing' && this.getPhaseElapsedMs() + TIME_EPSILON_MS >= this.phaseDurationMs
     )
   }
 
   isHoldComplete(): boolean {
     return (
-      this.phase === 'hold' &&
-      this.getPhaseElapsedMs() + TIME_EPSILON_MS >= this.phaseDurationMs
+      this.phase === 'hold' && this.getPhaseElapsedMs() + TIME_EPSILON_MS >= this.phaseDurationMs
     )
   }
 

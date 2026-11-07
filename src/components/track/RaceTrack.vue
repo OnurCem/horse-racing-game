@@ -29,9 +29,7 @@ const lanes = computed(() => {
     }))
   }
 
-  const progressByLane = new Map(
-    props.frameProgress.map((row) => [row.lane, row.progressPercent]),
-  )
+  const progressByLane = new Map(props.frameProgress.map((row) => [row.lane, row.progressPercent]))
 
   return props.activeRound.entries.map((entry) => ({
     lane: entry.lane,

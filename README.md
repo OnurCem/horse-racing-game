@@ -14,19 +14,19 @@ A responsive browser game: generate a six-round schedule from a roster of 20 hor
 
 ## Scripts
 
-| Command                    | Description                                              |
-| -------------------------- | -------------------------------------------------------- |
-| `npm run dev`              | Dev server (base `/`)                                    |
-| `npm run build`            | Production build (`VITE_BASE` optional, default `/`)     |
-| `npm run preview`          | Preview the production build                             |
-| `npm run type-check`       | Type-check without emitting                              |
-| `npm run lint`             | ESLint                                                   |
-| `npm run format`           | Prettier                                                 |
-| `npm run test`             | Vitest unit suite                                        |
-| `npm run test:e2e`         | Playwright browser flows                                 |
-| `npm run test:visual`      | Visual snapshots in the Playwright Docker image          |
-| `npm run test:visual:local`| Visual snapshots on the host (Chromium required)         |
-| `npm run test:visual:update` | Refresh baselines inside Docker                        |
+| Command                      | Description                                          |
+| ---------------------------- | ---------------------------------------------------- |
+| `npm run dev`                | Dev server (base `/`)                                |
+| `npm run build`              | Production build (`VITE_BASE` optional, default `/`) |
+| `npm run preview`            | Preview the production build                         |
+| `npm run type-check`         | Type-check without emitting                          |
+| `npm run lint`               | ESLint                                               |
+| `npm run format`             | Prettier                                             |
+| `npm run test`               | Vitest unit suite                                    |
+| `npm run test:e2e`           | Playwright browser flows                             |
+| `npm run test:visual`        | Visual snapshots in the Playwright Docker image      |
+| `npm run test:visual:local`  | Visual snapshots on the host (Chromium required)     |
+| `npm run test:visual:update` | Refresh baselines inside Docker                      |
 
 For GitHub Pages, build with `VITE_BASE=/horse-racing-game/ npm run build`.
 

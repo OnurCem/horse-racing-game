@@ -102,11 +102,7 @@ describe('createRoundSimulation', () => {
 
     let found = false
     for (let seed = 0; seed < 200; seed += 1) {
-      const simulation = createRoundSimulation(
-        schedule[0]!,
-        roster,
-        createTestRandom(seed),
-      )
+      const simulation = createRoundSimulation(schedule[0]!, roster, createTestRandom(seed))
       const sampleTime = simulation.lastFinishTimeMs * 0.45
       if (hasLeadChangeAtTime(simulation, sampleTime)) {
         found = true
