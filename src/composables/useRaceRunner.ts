@@ -4,6 +4,8 @@ import { storeToRefs } from 'pinia'
 import { progressPercentAtTime, type SimulatedLane } from '../domain/simulation'
 import type { GameStatus } from '../domain/types'
 import { useGameStore } from '../stores/game'
+import { readBrowserTestConfig } from '../testSupport/browserTestConfig'
+import { installWindowTestApi } from '../testSupport/windowTestApi'
 
 export interface FrameLaneProgress {
   readonly lane: number
@@ -41,6 +43,7 @@ function computeFrameProgress(
 export function useRaceRunner() {
   const store = useGameStore()
   const { status, currentSimulation } = storeToRefs(store)
+  const testConfig = readBrowserTestConfig()
 
   const frameProgress = shallowRef<FrameLaneProgress[]>([])
 
@@ -87,13 +90,20 @@ export function useRaceRunner() {
 
   onMounted(() => {
     if (!timeSourceAttached) {
-      store.attachClock({ now: () => performance.now() })
+      store.attachClock(testConfig?.timeSource ?? { now: () => performance.now() })
       timeSourceAttached = true
     }
     if (store.roster.length === 0) {
-      store.loadRoster()
+      store.loadRoster(testConfig?.random)
     }
     refreshProgressOnce()
+
+    if (testConfig) {
+      installWindowTestApi(testConfig, () => store, {
+        refreshProgress: refreshProgressOnce,
+        scheduleFrame,
+      })
+    }
   })
 
   watch(status, (next) => {
