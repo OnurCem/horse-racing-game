@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { fastForwardOneResult } from './race-helpers'
-import { FIXTURE_SEED, fixtureQuery } from './fixtures'
+import { fixtureQuery } from './fixtures'
 
 test.describe('horse racing flows', () => {
   test('loads a roster of 20 horses', async ({ page }) => {
@@ -64,29 +64,106 @@ test.describe('horse racing flows', () => {
     await expect(page.getByText('Results appear after each round')).toBeVisible()
   })
 
-  test('mobile panels expand and the track fits the viewport', async ({ page }) => {
+  test('fits the heading, controls, and track on a 390 × 844 phone while racing', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(`/${fixtureQuery(true)}`)
+    await page.getByRole('button', { name: 'Generate' }).click()
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.evaluate(() => window.__HORSE_RACING_TEST__?.advanceTime(1_000))
+
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+
+    const heading = await page.getByRole('heading', { name: /^Round 1 of 6/ }).boundingBox()
+    const pause = await page.getByRole('button', { name: 'Pause' }).boundingBox()
+    const track = await page.locator('.race-track').boundingBox()
+    expect(heading).not.toBeNull()
+    expect(pause).not.toBeNull()
+    expect(track).not.toBeNull()
+
+    expect(heading!.y).toBeGreaterThanOrEqual(0)
+    expect(pause!.y + pause!.height).toBeLessThanOrEqual(track!.y)
+    expect(track!.y + track!.height).toBeLessThanOrEqual(844)
+    expect(track!.x + track!.width).toBeLessThanOrEqual(390)
+  })
+
+  test('keeps the track inside a 320 px viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 })
+    await page.goto(`/${fixtureQuery(true)}`)
+    await page.getByRole('button', { name: 'Generate' }).click()
+
+    const track = await page.locator('.race-track').boundingBox()
+    const finish = await page.locator('.finish-line').boundingBox()
+    expect(track!.x).toBeGreaterThanOrEqual(0)
+    expect(track!.x + track!.width).toBeLessThanOrEqual(320)
+    expect(finish!.x + finish!.width).toBeLessThanOrEqual(320)
+    await expect(page.locator('.lane-label').first()).toBeInViewport()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
+  })
+
+  test('expands the mobile schedule, roster, and full results', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(`/${fixtureQuery(true)}`)
     await page.getByRole('button', { name: 'Generate' }).click()
     await page.getByRole('button', { name: 'Start' }).click()
     await fastForwardOneResult(page)
 
-    await page.getByRole('button', { name: /Schedule · 6 rounds/ }).click()
-    await page.getByRole('button', { name: /Horse roster · 20/ }).click()
+    const schedule = page.getByRole('button', { name: /Schedule · 6 rounds/ })
+    await expect(schedule).toHaveAttribute('aria-expanded', 'false')
+    await schedule.click()
+    await expect(schedule).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.locator('.schedule-row')).toHaveCount(6)
+    await expect(page.locator('.schedule-row').first()).toBeVisible()
+
+    const roster = page.getByRole('button', { name: /Horse roster · 20/ })
+    await roster.click()
+    await expect(roster).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.locator('.roster-table tbody tr').nth(19)).toBeAttached()
+    await expect(page.locator('.roster-table tbody tr').first()).toBeVisible()
+
+    const resultRows = page.locator('.results-table tbody tr')
+    await expect(resultRows).toHaveCount(3)
     await page.getByRole('button', { name: 'Show all 10' }).click()
+    await expect(resultRows).toHaveCount(10)
 
-    const controls = page.locator('.race-controls')
-    const track = page.locator('.race-track')
-    const controlsBox = await controls.boundingBox()
-    const trackBox = await track.boundingBox()
-    expect(controlsBox).not.toBeNull()
-    expect(trackBox).not.toBeNull()
-
-    const bottom = (trackBox?.y ?? 0) + (trackBox?.height ?? 0)
-    expect(bottom).toBeLessThanOrEqual(844)
+    const rowHeights = await resultRows.evaluateAll((rows) =>
+      rows.map((row) => row.getBoundingClientRect().height),
+    )
+    for (const height of rowHeights) {
+      expect(height).toBeGreaterThanOrEqual(44)
+    }
   })
 
-  test('uses the fixture seed in the query string', () => {
-    expect(fixtureQuery(true)).toContain(String(FIXTURE_SEED))
+  test.describe('with reduced motion', () => {
+    test('moves horses in discrete 10% steps', async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      await page.goto(`/${fixtureQuery(true)}`)
+      expect(
+        await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
+      ).toBe(true)
+      await page.getByRole('button', { name: 'Generate' }).click()
+      await page.getByRole('button', { name: 'Start' }).click()
+
+      const ratios: number[] = []
+      for (let step = 0; step < 8; step += 1) {
+        await page.evaluate(() => window.__HORSE_RACING_TEST__?.advanceTime(330))
+        ratios.push(
+          ...(await page.locator('.lane-horse').evaluateAll((horses) =>
+            horses.map((horse) => {
+              const track = horse.parentElement as HTMLElement
+              const travel = track.clientWidth - 32
+              const x = new DOMMatrixReadOnly(getComputedStyle(horse).transform).m41
+              return x / travel
+            }),
+          )),
+        )
+      }
+
+      expect(ratios.some((ratio) => ratio > 0)).toBe(true)
+      for (const ratio of ratios) {
+        expect(Math.abs(ratio * 10 - Math.round(ratio * 10))).toBeLessThan(0.01)
+      }
+    })
   })
 })

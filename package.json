@@ -16,7 +16,8 @@
     "test:e2e": "playwright test --project e2e",
     "test:visual": "bash scripts/run-visual-tests.sh run",
     "test:visual:local": "playwright test --project visual-desktop --project visual-mobile",
-    "test:visual:update": "bash scripts/run-visual-tests.sh update"
+    "test:visual:update": "bash scripts/run-visual-tests.sh update",
+    "profile": "bash scripts/run-profile.sh"
   },
   "dependencies": {
     "pinia": "^3.0.4",

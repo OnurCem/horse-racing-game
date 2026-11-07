@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import type { Horse } from '../../domain/types'
 import HorseSilhouette from './HorseSilhouette.vue'
+import { displayedProgressPercent } from './laneMotion'
 
 const props = defineProps<{
   lane: number
@@ -21,8 +22,8 @@ const label = computed(() => {
 })
 
 const horseOffsetPx = computed(() => {
-  const ratio = Math.min(100, Math.max(0, props.progressPercent)) / 100
-  return ratio * props.travelWidthPx
+  const percent = displayedProgressPercent(props.progressPercent, props.reducedMotion)
+  return (percent / 100) * props.travelWidthPx
 })
 </script>
 
@@ -30,12 +31,7 @@ const horseOffsetPx = computed(() => {
   <div class="track-lane">
     <div class="lane-label">{{ label }}</div>
     <div class="lane-track">
-      <div
-        v-if="horse"
-        class="lane-horse"
-        :class="{ 'lane-horse--reduced': reducedMotion }"
-        :style="{ transform: `translateX(${horseOffsetPx}px)` }"
-      >
+      <div v-if="horse" class="lane-horse" :style="{ transform: `translateX(${horseOffsetPx}px)` }">
         <HorseSilhouette :color-hex="horse.colorHex" />
       </div>
     </div>
@@ -80,10 +76,6 @@ const horseOffsetPx = computed(() => {
   top: 50%;
   margin-top: -12px;
   will-change: transform;
-}
-
-.lane-horse--reduced {
-  transition: none;
 }
 
 @media (max-width: 899px) {

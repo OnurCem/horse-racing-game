@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HORSE_SILHOUETTE_PATH } from './horseSilhouettePath'
+import { HORSE_SILHOUETTE_PATH, HORSE_SILHOUETTE_VIEWBOX } from './horseSilhouettePath'
 
 defineProps<{
   colorHex: string
@@ -11,7 +11,7 @@ const outline = '#1b2a4a'
 <template>
   <svg
     class="horse-silhouette"
-    viewBox="0 0 219.175 219.175"
+    :viewBox="HORSE_SILHOUETTE_VIEWBOX"
     width="32"
     height="22"
     aria-hidden="true"
@@ -21,7 +21,7 @@ const outline = '#1b2a4a'
       :d="HORSE_SILHOUETTE_PATH"
       :fill="colorHex"
       :stroke="outline"
-      stroke-width="2.2"
+      stroke-width="1.6"
       stroke-linejoin="round"
       stroke-linecap="round"
     />
