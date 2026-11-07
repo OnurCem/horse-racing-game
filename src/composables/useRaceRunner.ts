@@ -14,19 +14,22 @@ export interface FrameLaneProgress {
   readonly progressPercent: number
 }
 
-function computeFrameProgress(
+/** Lane positions for the current frame; exported for unit tests. */
+export function computeFrameProgress(
   status: GameStatus,
   lanes: readonly SimulatedLane[],
   clock: Pick<RaceClock, 'getPhase' | 'getPhaseElapsedMs' | 'isRoundComplete'>,
 ): FrameLaneProgress[] {
   const phase = clock.getPhase()
-  if (phase === 'idle' || lanes.length === 0) {
+  // The store stops the clock on completion, so check status before the idle phase
+  // to keep the final round's horses at the finish line.
+  if (lanes.length === 0 || (phase === 'idle' && status !== 'complete')) {
     return []
   }
 
   const elapsed = clock.getPhaseElapsedMs()
   const atFinish =
-    phase === 'hold' || status === 'complete' || (phase === 'racing' && clock.isRoundComplete())
+    status === 'complete' || phase === 'hold' || (phase === 'racing' && clock.isRoundComplete())
 
   return lanes.map((lane) => ({
     lane: lane.lane,
