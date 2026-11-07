@@ -82,10 +82,10 @@ watch(
 
 <template>
   <section class="race-track" aria-label="Race track">
-    <p v-if="status === 'initial' || !activeRound" class="track-hint">
-      Generate a schedule to begin
-    </p>
     <div class="track-inner">
+      <p v-if="status === 'initial' || !activeRound" class="track-hint">
+        <span class="track-hint-text">Generate a schedule to begin</span>
+      </p>
       <div ref="lanesColumnRef" class="lanes-column">
         <TrackLane
           v-for="row in lanes"
@@ -99,10 +99,10 @@ watch(
         />
       </div>
       <div v-if="activeRound" class="finish-column" aria-hidden="true">
-        <span class="finish-distance">{{ distanceLabel }}</span>
-        <div class="finish-marker">
+        <div class="finish-line" />
+        <div class="finish-labels">
+          <span class="finish-distance">{{ distanceLabel }}</span>
           <span class="finish-label">Finish</span>
-          <div class="finish-line" />
         </div>
       </div>
     </div>
@@ -121,22 +121,44 @@ watch(
   .race-track {
     padding: 0.5rem 0.35rem 0.5rem 0.5rem;
   }
-
-  .finish-column {
-    width: 2.25rem;
-  }
 }
 
+/* The hint overlays the empty lanes instead of taking its own row, so the
+   track keeps the same height when it disappears on Generate and nothing
+   below it moves. The left inset skips the lane labels. */
 .track-hint {
-  margin: 0 0 0.5rem;
+  position: absolute;
+  inset: 0 0 0 var(--hint-label-inset);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  pointer-events: none;
+}
+
+.track-hint-text {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  background: #ebe4d8;
   font-size: 0.9rem;
   color: rgba(27, 42, 74, 0.75);
+  text-align: center;
 }
 
+/* No gap: the finish line sits flush with the end of the lanes, so a horse at
+   100% progress touches it. */
 .track-inner {
+  --hint-label-inset: 6rem;
+  position: relative;
   display: flex;
   align-items: stretch;
-  gap: 0.5rem;
+}
+
+@media (max-width: 899px) {
+  .track-inner {
+    --hint-label-inset: 4.35rem;
+  }
 }
 
 .lanes-column {
@@ -148,12 +170,16 @@ watch(
 
 .finish-column {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  width: 2.75rem;
+  align-items: stretch;
+  gap: 0.3rem;
   flex-shrink: 0;
-  align-self: stretch;
+}
+
+.finish-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .finish-distance {
@@ -162,16 +188,7 @@ watch(
   color: var(--text);
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  flex-shrink: 0;
-}
-
-.finish-marker {
-  display: flex;
-  flex: 1;
-  align-items: stretch;
-  gap: 0.2rem;
-  width: 100%;
-  align-self: stretch;
+  white-space: nowrap;
 }
 
 .finish-label {
@@ -181,12 +198,11 @@ watch(
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .finish-line {
-  width: 8px;
-  flex: 1;
+  /* Fixed basis: a growable flex item here would widen past two columns. */
+  flex: 0 0 8px;
   border-radius: 2px;
   /* Two-column checkerboard of 4 px squares, as in the mockup. */
   background: conic-gradient(#f8f5f0 0 25%, #1f5fe0 0 50%, #f8f5f0 0 75%, #1f5fe0 0) 0 0 / 8px 8px;

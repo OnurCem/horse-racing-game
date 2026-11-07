@@ -68,31 +68,54 @@ const onPrimary = (): void => {
 
 <template>
   <header class="race-controls">
-    <h2 class="race-heading">{{ heading }}</h2>
-    <div class="race-actions">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        :disabled="!canGenerate"
-        @click="emit('generate')"
-      >
-        Generate
-      </button>
-      <button type="button" class="btn btn-primary" :disabled="primaryDisabled" @click="onPrimary">
-        {{ primaryLabel }}
-      </button>
+    <div class="race-controls-row">
+      <h2 class="race-heading">{{ heading }}</h2>
+      <div class="race-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          :disabled="!canGenerate"
+          @click="emit('generate')"
+        >
+          Generate
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          :disabled="primaryDisabled"
+          @click="onPrimary"
+        >
+          {{ primaryLabel }}
+        </button>
+      </div>
     </div>
   </header>
 </template>
 
 <style scoped>
 .race-controls {
+  container-type: inline-size;
+}
+
+.race-controls-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0;
+}
+
+/* When the longest heading ("Round 6 of 6 · 2,200 m · Paused") and the buttons
+   can't share a row, always put the heading on its own row. Wrapping only when
+   the text gets long would change the header's height between states and shift
+   the track. */
+@container (max-width: 34rem) {
+  .race-controls-row {
+    flex-wrap: wrap;
+  }
+
+  .race-heading {
+    flex-basis: 100%;
+  }
 }
 
 .race-heading {

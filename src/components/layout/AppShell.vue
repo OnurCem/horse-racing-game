@@ -70,7 +70,9 @@ const prefersReducedMotion = useReducedMotion()
 
 .app-grid {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) 1fr;
+  /* 340px fits the roster table (about 320px of content plus a classic
+     scrollbar) without wrapping names or scrolling sideways. */
+  grid-template-columns: 340px minmax(0, 1fr);
   grid-template-rows: auto auto 1fr;
   grid-template-areas:
     'schedule controls'
