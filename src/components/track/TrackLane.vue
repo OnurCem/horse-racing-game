@@ -44,8 +44,9 @@ const horseOffsetPx = computed(() => {
 
 <style scoped>
 .track-lane {
+  --lane-label-width: 5.5rem;
   display: grid;
-  grid-template-columns: 5.5rem 1fr;
+  grid-template-columns: var(--lane-label-width) 1fr;
   align-items: center;
   min-height: 42px;
   border-bottom: 1px dashed rgba(27, 42, 74, 0.2);
@@ -83,5 +84,20 @@ const horseOffsetPx = computed(() => {
 
 .lane-horse--reduced {
   transition: none;
+}
+
+@media (max-width: 899px) {
+  .track-lane {
+    --lane-label-width: 4rem;
+  }
+
+  .lane-label {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.25rem;
+  }
+
+  .lane-track {
+    margin-left: 0.35rem;
+  }
 }
 </style>

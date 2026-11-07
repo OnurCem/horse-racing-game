@@ -1,92 +1,97 @@
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+
+import CollapsibleSection from '../layout/CollapsibleSection.vue'
+import RosterTable from './RosterTable.vue'
+import { useMatchMedia } from '../../composables/useMatchMedia'
 import type { Horse } from '../../domain/types'
 
-defineProps<{
+const props = defineProps<{
   roster: readonly Horse[]
 }>()
+
+const isNarrow = useMatchMedia('(max-width: 899px)')
+
+const rosterExpanded = ref(true)
+
+watch(
+  isNarrow,
+  (narrow) => {
+    rosterExpanded.value = !narrow
+  },
+  { immediate: true },
+)
+
+const collapsibleHeading = computed(() => `Horse roster · ${props.roster.length}`)
+
+const showCollapsibleChrome = computed(() => isNarrow.value)
 </script>
 
 <template>
-  <section class="roster-panel" aria-labelledby="roster-heading">
-    <h3 id="roster-heading" class="panel-heading">Horse roster · {{ roster.length }}</h3>
-    <div class="roster-scroll">
-      <table class="roster-table">
-        <thead>
-          <tr>
-            <th scope="col">No.</th>
-            <th scope="col">Name</th>
-            <th scope="col">Color</th>
-            <th scope="col">Condition</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="horse in roster" :key="horse.id">
-            <td>{{ horse.id }}</td>
-            <td>{{ horse.name }}</td>
-            <td>
-              <span class="color-cell">
-                <span
-                  class="color-swatch"
-                  :style="{ backgroundColor: horse.colorHex }"
-                  :title="horse.colorName"
-                />
-                {{ horse.colorName }}
-              </span>
-            </td>
-            <td>{{ horse.condition }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <section
+    class="roster-panel"
+    :class="{ 'roster-panel--flat': !showCollapsibleChrome }"
+    aria-labelledby="roster-heading"
+  >
+    <CollapsibleSection
+      v-if="showCollapsibleChrome"
+      panel-id="roster"
+      :heading="collapsibleHeading"
+      :expanded="rosterExpanded"
+      @toggle="rosterExpanded = !rosterExpanded"
+    >
+      <RosterTable :roster="roster" />
+    </CollapsibleSection>
+    <template v-else>
+      <div class="roster-desktop-header">
+        <h3 id="roster-heading" class="panel-heading">{{ collapsibleHeading }}</h3>
+        <button
+          type="button"
+          class="roster-toggle"
+          :aria-expanded="rosterExpanded"
+          aria-controls="roster-table-body"
+          @click="rosterExpanded = !rosterExpanded"
+        >
+          {{ rosterExpanded ? 'Hide roster' : 'Show roster' }}
+        </button>
+      </div>
+      <RosterTable
+        v-show="rosterExpanded"
+        id="roster-table-body"
+        :roster="roster"
+      />
+    </template>
   </section>
 </template>
 
 <style scoped>
-.panel-heading {
-  margin: 0 0 0.5rem;
+.roster-panel--flat .panel-heading {
+  margin: 0;
   font-size: 1rem;
   font-weight: 650;
 }
 
-.roster-scroll {
-  max-height: 22rem;
-  overflow-y: auto;
-  border: 1px solid rgba(27, 42, 74, 0.12);
+.roster-desktop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.roster-toggle {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgba(27, 42, 74, 0.2);
   border-radius: 6px;
   background: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
 }
 
-.roster-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
-
-.roster-table th,
-.roster-table td {
-  padding: 0.35rem 0.5rem;
-  text-align: left;
-  border-bottom: 1px solid rgba(27, 42, 74, 0.08);
-}
-
-.roster-table th {
-  position: sticky;
-  top: 0;
-  background: #f0ebe3;
-  font-weight: 650;
-}
-
-.color-cell {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.color-swatch {
-  width: 0.85rem;
-  height: 0.85rem;
-  border-radius: 50%;
-  border: 1px solid rgba(27, 42, 74, 0.25);
-  flex-shrink: 0;
+.roster-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 </style>
