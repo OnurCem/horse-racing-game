@@ -159,6 +159,11 @@ export const useGameStore = defineStore('game', {
         return
       }
 
+      const clock = this.clock
+      if (clock?.getPhase() === 'racing' && !clock.isRoundComplete()) {
+        return
+      }
+
       this.results.push(toRoundResult(simulation))
 
       const isFinalRound = scheduled.round === 6
@@ -171,6 +176,9 @@ export const useGameStore = defineStore('game', {
 
       this.pendingHold = true
       this.clock?.startHold(DEFAULT_INTER_ROUND_HOLD_MS)
+      if (this.status === 'paused') {
+        this.clock?.pause()
+      }
     },
 
     /** After the inter-round hold, load the next scheduled round. */
@@ -181,7 +189,7 @@ export const useGameStore = defineStore('game', {
       if (this.status !== 'running' && this.status !== 'paused') {
         return
       }
-      if (this.clock && !this.clock.isHoldComplete()) {
+      if (!this.clock || !this.clock.isHoldComplete()) {
         return
       }
 

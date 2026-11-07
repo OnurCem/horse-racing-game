@@ -2,21 +2,9 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { DEFAULT_INTER_ROUND_HOLD_MS } from '../../src/race/raceClock'
-import type { TimeSource } from '../../src/race/raceClock'
 import { useGameStore } from '../../src/stores/game'
+import { ManualTimeSource } from './manualTimeSource'
 import { createTestRandom } from './testRandom'
-
-class ManualTimeSource implements TimeSource {
-  private current = 0
-
-  now(): number {
-    return this.current
-  }
-
-  advance(ms: number): void {
-    this.current += ms
-  }
-}
 
 describe('useGameStore', () => {
   beforeEach(() => {
@@ -70,6 +58,37 @@ describe('useGameStore', () => {
     }
 
     expect(store.status).toBe('complete')
+  })
+
+  it('does not complete a round before the clock reaches the last finisher', () => {
+    const { store } = setupStore(3)
+    store.generateSchedule()
+    store.start()
+    store.completeRound()
+    expect(store.results).toHaveLength(0)
+  })
+
+  it('keeps the inter-round hold frozen when paused at the finish line', () => {
+    const { store, time } = setupStore(17)
+    store.generateSchedule()
+    store.start()
+
+    time.advance(store.currentSimulation!.lastFinishTimeMs)
+    store.pause()
+    store.syncFromClock()
+    expect(store.results).toHaveLength(1)
+    expect(store.status).toBe('paused')
+    expect(store.clock?.getPhase()).toBe('hold')
+    expect(store.clock?.isPaused()).toBe(true)
+
+    time.advance(DEFAULT_INTER_ROUND_HOLD_MS)
+    store.syncFromClock()
+    expect(store.activeRound?.round).toBe(1)
+
+    store.resume()
+    time.advance(DEFAULT_INTER_ROUND_HOLD_MS)
+    store.syncFromClock()
+    expect(store.activeRound?.round).toBe(2)
   })
 
   it('prevents duplicate completion for the same round', () => {

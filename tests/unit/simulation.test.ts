@@ -45,6 +45,35 @@ describe('createRoundSimulation', () => {
     }
   })
 
+  it('breaks exact finish-time ties by lower lane number', () => {
+    const simulation = {
+      round: 1,
+      distanceMeters: 1200,
+      lastFinishTimeMs: 5000,
+      lanes: [
+        {
+          lane: 2,
+          horseId: 20,
+          speedMps: 1,
+          finishTimeMs: 5000,
+          segments: [{ durationMs: 5000, distanceFraction: 1 }],
+        },
+        {
+          lane: 1,
+          horseId: 10,
+          speedMps: 1,
+          finishTimeMs: 5000,
+          segments: [{ durationMs: 5000, distanceFraction: 1 }],
+        },
+      ],
+    }
+
+    const ranking = rankByFinishTime(simulation)
+    expect(ranking[0]!.horseId).toBe(10)
+    expect(ranking[0]!.lane).toBe(1)
+    expect(ranking[1]!.horseId).toBe(20)
+  })
+
   it('ranks by finish time and breaks ties by lane order', () => {
     const roster = createRoster(createTestRandom(8))
     const schedule = createSchedule(roster, createTestRandom(9))

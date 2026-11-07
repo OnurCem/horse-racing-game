@@ -1,18 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { DEFAULT_INTER_ROUND_HOLD_MS, RaceClock, type TimeSource } from '../../src/race/raceClock'
-
-class ManualTimeSource implements TimeSource {
-  private current = 0
-
-  now(): number {
-    return this.current
-  }
-
-  advance(ms: number): void {
-    this.current += ms
-  }
-}
+import { DEFAULT_INTER_ROUND_HOLD_MS, RaceClock } from '../../src/race/raceClock'
+import { ManualTimeSource } from './manualTimeSource'
 
 describe('RaceClock', () => {
   it('reports round completion after active racing time elapses', () => {
