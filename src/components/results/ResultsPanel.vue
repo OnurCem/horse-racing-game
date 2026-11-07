@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
-import { useMatchMedia } from '../../composables/useMatchMedia'
+import { NARROW_LAYOUT_QUERY, useMatchMedia } from '../../composables/useMatchMedia'
 import type { Horse, RoundResult } from '../../domain/types'
 
 const props = defineProps<{
@@ -9,11 +9,10 @@ const props = defineProps<{
   roster: readonly Horse[]
 }>()
 
-const isNarrow = useMatchMedia('(max-width: 899px)')
+const isNarrow = useMatchMedia(NARROW_LAYOUT_QUERY)
 
 const openRound = ref<number | null>(null)
 const expandedFull = ref<Set<number>>(new Set())
-const panelRef = ref<HTMLElement | null>(null)
 const announceText = ref('')
 
 const horsesById = computed(() => new Map(props.roster.map((h) => [h.id, h])))
@@ -35,27 +34,24 @@ const mobilePanelTitle = computed(() => {
 
 watch(
   () => props.results.length,
-  async (count, prev = 0) => {
-    const scrollTop = panelRef.value?.scrollTop ?? 0
-
-    if (count > prev && count > 0) {
-      const latest = props.results[count - 1]
-      openRound.value = latest?.round ?? null
-      if (latest) {
-        const nextExpanded = new Set(expandedFull.value)
-        nextExpanded.delete(latest.round)
-        expandedFull.value = nextExpanded
-      }
-
-      if (latest) {
-        announceText.value = `Round ${latest.round} complete. Results are available.`
-      }
+  (count, prev = 0) => {
+    if (count === 0) {
+      // A new game cleared the results.
+      openRound.value = null
+      expandedFull.value = new Set()
+      announceText.value = ''
+      return
+    }
+    if (count <= prev) {
+      return
     }
 
-    await nextTick()
-    if (panelRef.value) {
-      panelRef.value.scrollTop = scrollTop
-    }
+    const latest = props.results[count - 1]!
+    openRound.value = latest.round
+    const nextExpanded = new Set(expandedFull.value)
+    nextExpanded.delete(latest.round)
+    expandedFull.value = nextExpanded
+    announceText.value = `Round ${latest.round} complete. Results are available.`
   },
   { immediate: true },
 )
@@ -81,12 +77,7 @@ const expandAll = (round: number): void => {
 </script>
 
 <template>
-  <section
-    ref="panelRef"
-    class="results-panel"
-    aria-labelledby="results-heading"
-    aria-live="polite"
-  >
+  <section class="results-panel" aria-labelledby="results-heading">
     <h3 id="results-heading" class="panel-heading">{{ mobilePanelTitle }}</h3>
     <p class="visually-hidden" aria-live="polite">{{ announceText }}</p>
     <p v-if="results.length === 0" class="empty-copy">Results appear after each round</p>

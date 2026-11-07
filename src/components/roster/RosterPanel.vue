@@ -3,14 +3,14 @@ import { computed, ref, watch } from 'vue'
 
 import CollapsibleSection from '../layout/CollapsibleSection.vue'
 import RosterTable from './RosterTable.vue'
-import { useMatchMedia } from '../../composables/useMatchMedia'
+import { NARROW_LAYOUT_QUERY, useMatchMedia } from '../../composables/useMatchMedia'
 import type { Horse } from '../../domain/types'
 
 const props = defineProps<{
   roster: readonly Horse[]
 }>()
 
-const isNarrow = useMatchMedia('(max-width: 899px)')
+const isNarrow = useMatchMedia(NARROW_LAYOUT_QUERY)
 
 const rosterExpanded = ref(true)
 
