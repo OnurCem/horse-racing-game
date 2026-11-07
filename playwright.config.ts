@@ -15,7 +15,10 @@ export default defineConfig({
   expect: {
     toHaveScreenshot: {
       animations: 'disabled',
-      maxDiffPixelRatio: 0.01,
+      // Screenshots only run in the pinned Playwright container, where rendering is
+      // deterministic, so no differing pixels are allowed. A looser ratio let a
+      // different roster and race pass unnoticed.
+      maxDiffPixels: 0,
     },
   },
   use: {
