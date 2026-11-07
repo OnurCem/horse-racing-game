@@ -188,12 +188,7 @@ watch(
   width: 8px;
   flex: 1;
   border-radius: 2px;
-  background: repeating-linear-gradient(
-    to bottom,
-    #1f5fe0 0,
-    #1f5fe0 8px,
-    #f8f5f0 8px,
-    #f8f5f0 16px
-  );
+  /* Two-column checkerboard of 4 px squares, as in the mockup. */
+  background: conic-gradient(#f8f5f0 0 25%, #1f5fe0 0 50%, #f8f5f0 0 75%, #1f5fe0 0) 0 0 / 8px 8px;
 }
 </style>
