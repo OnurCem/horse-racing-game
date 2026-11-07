@@ -13,7 +13,7 @@ const props = defineProps<{
   reducedMotion: boolean
 }>()
 
-const trackInnerRef = ref<HTMLElement | null>(null)
+const lanesColumnRef = ref<HTMLElement | null>(null)
 const travelWidthPx = ref(0)
 
 const horsesById = computed(() => new Map(props.roster.map((h) => [h.id, h])))
@@ -49,22 +49,21 @@ const distanceLabel = computed(() => {
 })
 
 const measureTravelWidth = (): void => {
-  const el = trackInnerRef.value
-  if (!el) {
+  const laneTrack = lanesColumnRef.value?.querySelector('.lane-track')
+  if (!(laneTrack instanceof HTMLElement)) {
     return
   }
-  const finishStrip = 8
-  const padding = 8
-  travelWidthPx.value = Math.max(0, el.clientWidth - finishStrip - padding - 32)
+  const horseWidth = 32
+  travelWidthPx.value = Math.max(0, laneTrack.clientWidth - horseWidth)
 }
 
 let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
   measureTravelWidth()
-  if (typeof ResizeObserver !== 'undefined' && trackInnerRef.value) {
+  if (typeof ResizeObserver !== 'undefined' && lanesColumnRef.value) {
     resizeObserver = new ResizeObserver(() => measureTravelWidth())
-    resizeObserver.observe(trackInnerRef.value)
+    resizeObserver.observe(lanesColumnRef.value)
   } else {
     window.addEventListener('resize', measureTravelWidth)
   }
@@ -88,21 +87,24 @@ watch(
     <p v-if="status === 'initial' || !activeRound" class="track-hint">
       Generate a schedule to begin
     </p>
-    <div ref="trackInnerRef" class="track-inner">
-      <TrackLane
-        v-for="row in lanes"
-        :key="row.lane"
-        :lane="row.lane"
-        :horse-id="row.horseId"
-        :horse="row.horse"
-        :progress-percent="row.progressPercent"
-        :travel-width-px="travelWidthPx"
-        :reduced-motion="reducedMotion"
-      />
-      <div class="finish-column" aria-hidden="true">
-        <span v-if="activeRound" class="finish-distance">{{ distanceLabel }}</span>
-        <div class="finish-line">
+    <div class="track-inner">
+      <div ref="lanesColumnRef" class="lanes-column">
+        <TrackLane
+          v-for="row in lanes"
+          :key="row.lane"
+          :lane="row.lane"
+          :horse-id="row.horseId"
+          :horse="row.horse"
+          :progress-percent="row.progressPercent"
+          :travel-width-px="travelWidthPx"
+          :reduced-motion="reducedMotion"
+        />
+      </div>
+      <div v-if="activeRound" class="finish-column" aria-hidden="true">
+        <span class="finish-distance">{{ distanceLabel }}</span>
+        <div class="finish-marker">
           <span class="finish-label">Finish</span>
+          <div class="finish-line" />
         </div>
       </div>
     </div>
@@ -124,19 +126,26 @@ watch(
 }
 
 .track-inner {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.25rem;
+  display: flex;
   align-items: stretch;
+  gap: 0.5rem;
+}
+
+.lanes-column {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .finish-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 2.5rem;
   gap: 0.35rem;
+  width: 2.75rem;
+  flex-shrink: 0;
+  align-self: stretch;
 }
 
 .finish-distance {
@@ -145,12 +154,31 @@ watch(
   color: var(--text);
   writing-mode: vertical-rl;
   transform: rotate(180deg);
+  flex-shrink: 0;
+}
+
+.finish-marker {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  gap: 0.2rem;
+  width: 100%;
+  align-self: stretch;
+}
+
+.finish-label {
+  font-size: 0.7rem;
+  font-weight: 650;
+  color: var(--text);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .finish-line {
   width: 8px;
   flex: 1;
-  min-height: 120px;
   border-radius: 2px;
   background: repeating-linear-gradient(
     to bottom,
@@ -159,21 +187,5 @@ watch(
     #f8f5f0 8px,
     #f8f5f0 16px
   );
-  position: relative;
-}
-
-.finish-label {
-  position: absolute;
-  right: -3rem;
-  top: 50%;
-  transform: translateY(-50%) rotate(90deg);
-  font-size: 0.7rem;
-  font-weight: 650;
-  color: var(--text);
-  white-space: nowrap;
-}
-
-.finish-line {
-  position: relative;
 }
 </style>

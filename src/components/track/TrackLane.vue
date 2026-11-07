@@ -77,7 +77,7 @@ const horseOffsetPx = computed(() => {
   position: absolute;
   left: 0;
   top: 50%;
-  margin-top: -11px;
+  margin-top: -12px;
   will-change: transform;
 }
 
