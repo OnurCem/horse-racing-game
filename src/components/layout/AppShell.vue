@@ -14,42 +14,42 @@ const { roster, schedule, status, activeRound, activeRoundIndex, results } = sto
 
 const { frameProgress } = useRaceRunner()
 const prefersReducedMotion = useReducedMotion()
+
 </script>
 
 <template>
   <div class="app-shell">
     <h1 class="app-title">Horse Racing</h1>
     <div class="app-grid">
-      <aside class="app-sidebar">
-        <SchedulePanel
-          :schedule="schedule"
-          :roster="roster"
-          :active-round-index="activeRoundIndex"
-          :status="status"
-          :results="results"
-        />
-        <RosterPanel :roster="roster" />
-      </aside>
-      <div class="app-main">
-        <RaceControls
-          :status="status"
-          :active-round="activeRound"
-          :schedule-length="schedule.length"
-          :active-round-index="activeRoundIndex"
-          @generate="store.generateSchedule()"
-          @start="store.start()"
-          @pause="store.pause()"
-          @resume="store.resume()"
-        />
-        <RaceTrack
-          :status="status"
-          :active-round="activeRound"
-          :roster="roster"
-          :frame-progress="frameProgress"
-          :reduced-motion="prefersReducedMotion"
-        />
-        <ResultsPanel :results="results" :roster="roster" />
-      </div>
+      <SchedulePanel
+        class="area-schedule"
+        :schedule="schedule"
+        :roster="roster"
+        :active-round-index="activeRoundIndex"
+        :status="status"
+        :results="results"
+      />
+      <RosterPanel class="area-roster" :roster="roster" />
+      <RaceControls
+        class="area-controls"
+        :status="status"
+        :active-round="activeRound"
+        :schedule-length="schedule.length"
+        :active-round-index="activeRoundIndex"
+        @generate="store.generateSchedule()"
+        @start="store.start()"
+        @pause="store.pause()"
+        @resume="store.resume()"
+      />
+      <RaceTrack
+        class="area-track"
+        :status="status"
+        :active-round="activeRound"
+        :roster="roster"
+        :frame-progress="frameProgress"
+        :reduced-motion="prefersReducedMotion"
+      />
+      <ResultsPanel class="area-results" :results="results" :roster="roster" />
     </div>
   </div>
 </template>
@@ -72,20 +72,66 @@ const prefersReducedMotion = useReducedMotion()
 .app-grid {
   display: grid;
   grid-template-columns: minmax(220px, 280px) 1fr;
-  gap: 1.5rem;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    'schedule controls'
+    'schedule track'
+    'roster results';
+  column-gap: 1.5rem;
+  row-gap: 1.25rem;
   align-items: start;
 }
 
-.app-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+.area-schedule {
+  grid-area: schedule;
 }
 
-.app-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  min-width: 0;
+.area-roster {
+  grid-area: roster;
+}
+
+.area-controls {
+  grid-area: controls;
+}
+
+.area-track {
+  grid-area: track;
+}
+
+.area-results {
+  grid-area: results;
+}
+
+@media (max-width: 899px) {
+  .app-title {
+    margin-bottom: 0.85rem;
+  }
+
+  .app-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .area-controls {
+    order: 1;
+  }
+
+  .area-track {
+    order: 2;
+  }
+
+  .area-results {
+    order: 3;
+  }
+
+  .area-schedule {
+    order: 4;
+  }
+
+  .area-roster {
+    order: 5;
+  }
 }
 </style>

@@ -92,7 +92,7 @@ const onPrimary = (): void => {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
 }
 
 .race-heading {

@@ -119,6 +119,16 @@ watch(
   padding: 0.75rem 0.5rem 0.75rem 0.75rem;
 }
 
+@media (max-width: 899px) {
+  .race-track {
+    padding: 0.5rem 0.35rem 0.5rem 0.5rem;
+  }
+
+  .finish-column {
+    width: 2.25rem;
+  }
+}
+
 .track-hint {
   margin: 0 0 0.5rem;
   font-size: 0.9rem;

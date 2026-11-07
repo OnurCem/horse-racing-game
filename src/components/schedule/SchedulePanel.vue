@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
+import CollapsibleSection from '../layout/CollapsibleSection.vue'
+import { useMatchMedia } from '../../composables/useMatchMedia'
 import type { Horse, ScheduledRound } from '../../domain/types'
 
 const props = defineProps<{
@@ -11,7 +13,18 @@ const props = defineProps<{
   results: readonly { round: number }[]
 }>()
 
+const isNarrow = useMatchMedia('(max-width: 899px)')
+
+const panelExpanded = ref(true)
 const expandedRound = ref<number | null>(null)
+
+watch(
+  isNarrow,
+  (narrow) => {
+    panelExpanded.value = !narrow
+  },
+  { immediate: true },
+)
 
 const horsesById = computed(() => new Map(props.roster.map((h) => [h.id, h])))
 
@@ -39,49 +52,110 @@ const rowState = (
 const toggleRound = (round: number): void => {
   expandedRound.value = expandedRound.value === round ? null : round
 }
+
+const collapsibleHeading = computed(() => {
+  if (props.schedule.length === 0) {
+    return 'Schedule'
+  }
+  return `Schedule · ${props.schedule.length} rounds`
+})
+
+const showCollapsibleChrome = computed(() => isNarrow.value)
 </script>
 
 <template>
-  <section class="schedule-panel" aria-labelledby="schedule-heading">
-    <h3 id="schedule-heading" class="panel-heading">Schedule</h3>
-    <p v-if="schedule.length === 0" class="empty-copy">No schedule yet</p>
-    <ul v-else class="schedule-list">
-      <li
-        v-for="(item, index) in schedule"
-        :key="item.round"
-        class="schedule-row"
-        :class="`schedule-row--${rowState(index, item.round)}`"
-      >
-        <button type="button" class="schedule-summary" @click="toggleRound(item.round)">
-          <span class="schedule-marker" aria-hidden="true">
-            <template v-if="rowState(index, item.round) === 'completed'">✓</template>
-            <template v-else-if="rowState(index, item.round) === 'current'">●</template>
-            <template v-else-if="rowState(index, item.round) === 'next'">→</template>
-          </span>
-          <span>
-            Round {{ item.round }} · {{ item.distanceMeters.toLocaleString() }} m
-          </span>
-          <span
-            v-if="rowState(index, item.round) === 'current'"
-            class="visually-hidden"
-          >
-            now running
-          </span>
-        </button>
-        <ul v-if="expandedRound === item.round" class="entrant-list">
-          <li v-for="entry in item.entries" :key="entry.lane">
-            Lane {{ entry.lane }} · #{{ entry.horseId }}
-            <template v-if="resolveHorse(entry.horseId)">
-              · {{ resolveHorse(entry.horseId)!.name }}
-            </template>
-          </li>
-        </ul>
-      </li>
-    </ul>
+  <section
+    class="schedule-panel"
+    :class="{ 'schedule-panel--flat': !showCollapsibleChrome }"
+    aria-labelledby="schedule-heading"
+  >
+    <CollapsibleSection
+      v-if="showCollapsibleChrome"
+      panel-id="schedule"
+      :heading="collapsibleHeading"
+      :expanded="panelExpanded"
+      @toggle="panelExpanded = !panelExpanded"
+    >
+      <p v-if="schedule.length === 0" class="empty-copy">No schedule yet</p>
+      <ul v-else class="schedule-list">
+        <li
+          v-for="(item, index) in schedule"
+          :key="item.round"
+          class="schedule-row"
+          :class="`schedule-row--${rowState(index, item.round)}`"
+        >
+          <button type="button" class="schedule-summary" @click="toggleRound(item.round)">
+            <span class="schedule-marker" aria-hidden="true">
+              <template v-if="rowState(index, item.round) === 'completed'">✓</template>
+              <template v-else-if="rowState(index, item.round) === 'current'">●</template>
+            </span>
+            <span>
+              Round {{ item.round }} · {{ item.distanceMeters.toLocaleString() }} m
+            </span>
+            <span
+              v-if="rowState(index, item.round) === 'current'"
+              class="visually-hidden"
+            >
+              now running
+            </span>
+          </button>
+          <ul v-if="expandedRound === item.round" class="entrant-list">
+            <li v-for="entry in item.entries" :key="entry.lane">
+              Lane {{ entry.lane }} · #{{ entry.horseId }}
+              <template v-if="resolveHorse(entry.horseId)">
+                · {{ resolveHorse(entry.horseId)!.name }}
+              </template>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </CollapsibleSection>
+    <template v-else>
+      <h3 id="schedule-heading" class="panel-heading">Schedule</h3>
+      <p v-if="schedule.length === 0" class="empty-copy">No schedule yet</p>
+      <ul v-else class="schedule-list">
+        <li
+          v-for="(item, index) in schedule"
+          :key="item.round"
+          class="schedule-row"
+          :class="`schedule-row--${rowState(index, item.round)}`"
+        >
+          <button type="button" class="schedule-summary" @click="toggleRound(item.round)">
+            <span class="schedule-marker" aria-hidden="true">
+              <template v-if="rowState(index, item.round) === 'completed'">✓</template>
+              <template v-else-if="rowState(index, item.round) === 'current'">●</template>
+            </span>
+            <span>
+              Round {{ item.round }} · {{ item.distanceMeters.toLocaleString() }} m
+            </span>
+            <span
+              v-if="rowState(index, item.round) === 'current'"
+              class="visually-hidden"
+            >
+              now running
+            </span>
+          </button>
+          <ul v-if="expandedRound === item.round" class="entrant-list">
+            <li v-for="entry in item.entries" :key="entry.lane">
+              Lane {{ entry.lane }} · #{{ entry.horseId }}
+              <template v-if="resolveHorse(entry.horseId)">
+                · {{ resolveHorse(entry.horseId)!.name }}
+              </template>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </template>
   </section>
 </template>
 
 <style scoped>
+.schedule-panel--flat .panel-heading {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
 .panel-heading {
   margin: 0 0 0.5rem;
   font-size: 1rem;
