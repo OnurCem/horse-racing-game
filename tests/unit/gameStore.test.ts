@@ -1,0 +1,160 @@
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
+
+import { DEFAULT_INTER_ROUND_HOLD_MS } from '../../src/race/raceClock'
+import type { TimeSource } from '../../src/race/raceClock'
+import { useGameStore } from '../../src/stores/game'
+import { createTestRandom } from './testRandom'
+
+class ManualTimeSource implements TimeSource {
+  private current = 0
+
+  now(): number {
+    return this.current
+  }
+
+  advance(ms: number): void {
+    this.current += ms
+  }
+}
+
+describe('useGameStore', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  function setupStore(seed = 42) {
+    const store = useGameStore()
+    const random = createTestRandom(seed)
+    store.loadRoster(random)
+    const time = new ManualTimeSource()
+    store.attachClock(time)
+    return { store, time, random }
+  }
+
+  it('guards start until a schedule exists and guards generate while running', () => {
+    const { store } = setupStore()
+    store.start()
+    expect(store.status).toBe('initial')
+
+    store.generateSchedule()
+    expect(store.status).toBe('ready')
+    store.start()
+    expect(store.status).toBe('running')
+
+    store.generateSchedule()
+    expect(store.schedule).toHaveLength(6)
+    expect(store.status).toBe('running')
+  })
+
+  it('records one result per round and advances through six rounds', () => {
+    const { store, time } = setupStore(7)
+    store.generateSchedule()
+    store.start()
+
+    for (let round = 1; round <= 6; round += 1) {
+      const simulation = store.currentSimulation
+      expect(simulation?.round).toBe(round)
+
+      time.advance(simulation!.lastFinishTimeMs)
+      store.syncFromClock()
+      expect(store.results).toHaveLength(round)
+      expect(store.results[round - 1]!.round).toBe(round)
+      expect(store.results[round - 1]!.finishingOrder).toHaveLength(10)
+
+      if (round < 6) {
+        time.advance(DEFAULT_INTER_ROUND_HOLD_MS)
+        store.syncFromClock()
+        expect(store.activeRound?.round).toBe(round + 1)
+      }
+    }
+
+    expect(store.status).toBe('complete')
+  })
+
+  it('prevents duplicate completion for the same round', () => {
+    const { store, time } = setupStore(3)
+    store.generateSchedule()
+    store.start()
+
+    const duration = store.currentSimulation!.lastFinishTimeMs
+    time.advance(duration)
+    store.completeRound()
+    store.completeRound()
+
+    expect(store.results).toHaveLength(1)
+  })
+
+  it('supports pause and resume during racing and between rounds', () => {
+    const { store, time } = setupStore(5)
+    store.generateSchedule()
+    store.start()
+
+    time.advance(400)
+    store.pause()
+    expect(store.status).toBe('paused')
+
+    time.advance(10_000)
+    expect(store.clock?.getPhaseElapsedMs()).toBe(400)
+
+    store.resume()
+    const remaining = store.currentSimulation!.lastFinishTimeMs - 400
+    time.advance(remaining)
+    store.syncFromClock()
+    expect(store.results).toHaveLength(1)
+
+    store.pause()
+    time.advance(10_000)
+    expect(store.clock?.isHoldComplete()).toBe(false)
+
+    store.resume()
+    time.advance(DEFAULT_INTER_ROUND_HOLD_MS)
+    store.syncFromClock()
+    expect(store.activeRound?.round).toBe(2)
+  })
+
+  it('allows Generate while paused and resets to a fresh ready game', () => {
+    const { store, time } = setupStore(9)
+    store.generateSchedule()
+    store.start()
+    time.advance(200)
+    store.pause()
+
+    const firstSchedule = store.schedule
+    store.generateSchedule()
+
+    expect(store.status).toBe('ready')
+    expect(store.results).toHaveLength(0)
+    expect(store.schedule).not.toBe(firstSchedule)
+    expect(store.schedule).toHaveLength(6)
+  })
+
+  it('clears results and prepares a new ready game after completion', () => {
+    const { store, time } = setupStore(13)
+    store.generateSchedule()
+    store.start()
+
+    for (let round = 1; round <= 6; round += 1) {
+      time.advance(store.currentSimulation!.lastFinishTimeMs)
+      store.syncFromClock()
+      if (round < 6) {
+        time.advance(DEFAULT_INTER_ROUND_HOLD_MS)
+        store.syncFromClock()
+      }
+    }
+    expect(store.status).toBe('complete')
+
+    store.generateSchedule()
+    expect(store.status).toBe('ready')
+    expect(store.results).toHaveLength(0)
+    expect(store.activeRound?.round).toBe(1)
+  })
+
+  it('rejects resume when not paused', () => {
+    const { store } = setupStore()
+    store.generateSchedule()
+    store.start()
+    store.resume()
+    expect(store.status).toBe('running')
+  })
+})
