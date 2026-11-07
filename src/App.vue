@@ -1,5 +1,9 @@
+<script setup lang="ts">
+import AppShell from './components/layout/AppShell.vue'
+</script>
+
 <template>
   <main>
-    <h1 class="app-title">Horse Racing</h1>
+    <AppShell />
   </main>
 </template>

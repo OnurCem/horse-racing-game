@@ -75,7 +75,6 @@ describe('useGameStore', () => {
 
     time.advance(store.currentSimulation!.lastFinishTimeMs)
     store.pause()
-    store.syncFromClock()
     expect(store.results).toHaveLength(1)
     expect(store.status).toBe('paused')
     expect(store.clock?.getPhase()).toBe('hold')
