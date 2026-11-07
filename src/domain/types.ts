@@ -34,3 +34,6 @@ export interface RoundResult {
 }
 
 export type Roster = readonly Horse[]
+
+/** High-level game flow (see IMPLEMENTATION_PLAN state table). */
+export type GameStatus = 'initial' | 'ready' | 'running' | 'paused' | 'complete'
