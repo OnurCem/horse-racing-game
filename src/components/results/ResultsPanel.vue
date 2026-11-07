@@ -199,11 +199,11 @@ const expandAll = (round: number): void => {
 }
 
 @media (max-width: 899px) {
+  /* min-height does not apply to table cells; height acts as a minimum row height. */
   .results-table th,
   .results-table td {
-    min-height: 44px;
-    padding-top: 0.65rem;
-    padding-bottom: 0.65rem;
+    box-sizing: border-box;
+    height: 44px;
   }
 }
 
