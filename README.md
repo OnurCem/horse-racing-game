@@ -34,7 +34,7 @@ For GitHub Pages, build with `VITE_BASE=/horse-racing-game/ npm run build`.
 
 Pure game logic lives under `src/domain` and `src/race` (no Vue imports). Pinia holds discrete game state; `useRaceRunner` drives animation via `requestAnimationFrame` without storing per-frame data in the store. See `IMPLEMENTATION_PLAN.md` for the full structure.
 
-Browser tests accept `?seed=` for a deterministic roster and `?test=1` for a manual race clock exposed as `window.__HORSE_RACING_TEST__` (used by Playwright only).
+Builds made with `VITE_ENABLE_TEST_HOOKS=1` accept `?seed=` for a deterministic roster and `?test=1` for a manual race clock exposed as `window.__HORSE_RACING_TEST__`. Playwright sets the flag when it builds the app; the deployed build has no test hooks. If you reuse a local preview server for Playwright, start it from a build made with the flag.
 
 ## Assumptions
 

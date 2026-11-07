@@ -56,6 +56,8 @@ export default defineConfig({
     env: {
       ...process.env,
       VITE_BASE: repoBase,
+      // Builds the ?seed= / ?test=1 hooks into this bundle only; deployed builds omit them.
+      VITE_ENABLE_TEST_HOOKS: '1',
     },
   },
 })
