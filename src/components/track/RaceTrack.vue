@@ -82,10 +82,10 @@ watch(
 
 <template>
   <section class="race-track" aria-label="Race track">
-    <p v-if="status === 'initial' || !activeRound" class="track-hint">
-      Generate a schedule to begin
-    </p>
     <div class="track-inner">
+      <p v-if="status === 'initial' || !activeRound" class="track-hint">
+        <span class="track-hint-text">Generate a schedule to begin</span>
+      </p>
       <div ref="lanesColumnRef" class="lanes-column">
         <TrackLane
           v-for="row in lanes"
@@ -123,17 +123,42 @@ watch(
   }
 }
 
+/* The hint overlays the empty lanes instead of taking its own row, so the
+   track keeps the same height when it disappears on Generate and nothing
+   below it moves. The left inset skips the lane labels. */
 .track-hint {
-  margin: 0 0 0.5rem;
+  position: absolute;
+  inset: 0 0 0 var(--hint-label-inset);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  pointer-events: none;
+}
+
+.track-hint-text {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  background: #ebe4d8;
   font-size: 0.9rem;
   color: rgba(27, 42, 74, 0.75);
+  text-align: center;
 }
 
 /* No gap: the finish line sits flush with the end of the lanes, so a horse at
    100% progress touches it. */
 .track-inner {
+  --hint-label-inset: 6rem;
+  position: relative;
   display: flex;
   align-items: stretch;
+}
+
+@media (max-width: 899px) {
+  .track-inner {
+    --hint-label-inset: 4.35rem;
+  }
 }
 
 .lanes-column {
