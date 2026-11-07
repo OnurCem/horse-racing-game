@@ -63,6 +63,6 @@ Builds made with `VITE_ENABLE_TEST_HOOKS=1` accept `?seed=` for a deterministic 
 **Findings**
 
 - The race holds 60 fps at every throttle rate. Movement causes no repeated layout: one layout in the whole 4 s, with only transforms changing per frame. The roughly 60 style recalculations per second are the transform updates themselves.
-- The single long frame at 4× and 6× is the Start frame, which creates the round's simulation and renders the lane contents. It doesn't repeat during the race.
+- The long animation frame at 4× and 6× (100–170 ms) is the Generate render, which builds the schedule and draws the ten lanes just before Start. In one of two repeat runs, a single ~50 ms frame also appeared mid-race at both rates; it did not repeat within the round.
 - Pause and resume reach the screen within about two frames (20–33 ms, measured from the click to the second frame after it), and horse positions stay fixed while paused.
 - Limits: headless Chromium in Docker composites in software and caps animation frames at 60 Hz, and CPU throttling doesn't model a phone's GPU or thermal throttling. Check on a real mid-range phone before relying on these numbers for older devices.
