@@ -132,6 +132,10 @@ export const useGameStore = defineStore('game', {
       }
       this.clock?.pause()
       this.status = 'paused'
+      this.syncFromClock()
+      if (this.status === 'paused') {
+        this.clock?.pause()
+      }
     },
 
     resume(): void {
