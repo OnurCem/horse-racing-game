@@ -41,7 +41,11 @@ watch(
     if (count > prev && count > 0) {
       const latest = props.results[count - 1]
       openRound.value = latest?.round ?? null
-      expandedFull.value.delete(latest?.round ?? -1)
+      if (latest) {
+        const nextExpanded = new Set(expandedFull.value)
+        nextExpanded.delete(latest.round)
+        expandedFull.value = nextExpanded
+      }
 
       if (latest) {
         announceText.value = `Round ${latest.round} complete. Results are available.`
@@ -72,7 +76,7 @@ const showExpandAll = (group: RoundResult): boolean => {
 }
 
 const expandAll = (round: number): void => {
-  expandedFull.value.add(round)
+  expandedFull.value = new Set([...expandedFull.value, round])
 }
 </script>
 
