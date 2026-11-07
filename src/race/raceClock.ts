@@ -99,12 +99,17 @@ export class RaceClock {
     )
   }
 
+  /**
+   * Starts a fresh phase. A paused clock stays paused, so a phase that begins
+   * while the game is paused (for example the hold after a round finishes)
+   * does not accumulate time until {@link resume}.
+   */
   private resetPhase(phase: Exclude<RaceClockPhase, 'idle'>, durationMs: number): void {
+    const now = this.timeSource.now()
     this.phase = phase
     this.phaseDurationMs = durationMs
-    this.phaseStartedAt = this.timeSource.now()
-    this.paused = false
-    this.pauseStartedAt = 0
+    this.phaseStartedAt = now
+    this.pauseStartedAt = this.paused ? now : 0
     this.totalPausedMs = 0
   }
 }
