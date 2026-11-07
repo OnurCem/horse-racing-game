@@ -17,12 +17,21 @@ const horsesById = computed(() => new Map(props.roster.map((h) => [h.id, h])))
 
 const resolveHorse = (id: number): Horse | undefined => horsesById.value.get(id)
 
-const rowState = (index: number, round: number): 'upcoming' | 'current' | 'completed' => {
+const rowState = (
+  index: number,
+  round: number,
+): 'upcoming' | 'next' | 'current' | 'completed' => {
   if (props.results.some((r) => r.round === round)) {
     return 'completed'
   }
-  if (props.status !== 'initial' && index === props.activeRoundIndex) {
+  if (
+    (props.status === 'running' || props.status === 'paused') &&
+    index === props.activeRoundIndex
+  ) {
     return 'current'
+  }
+  if (props.status === 'ready' && index === props.activeRoundIndex) {
+    return 'next'
   }
   return 'upcoming'
 }
@@ -47,6 +56,7 @@ const toggleRound = (round: number): void => {
           <span class="schedule-marker" aria-hidden="true">
             <template v-if="rowState(index, item.round) === 'completed'">✓</template>
             <template v-else-if="rowState(index, item.round) === 'current'">●</template>
+            <template v-else-if="rowState(index, item.round) === 'next'">→</template>
           </span>
           <span>
             Round {{ item.round }} · {{ item.distanceMeters.toLocaleString() }} m
@@ -95,7 +105,8 @@ const toggleRound = (round: number): void => {
   margin-bottom: 0.25rem;
 }
 
-.schedule-row--current {
+.schedule-row--current,
+.schedule-row--next {
   background: rgba(31, 95, 224, 0.12);
 }
 
