@@ -55,7 +55,12 @@ const collapsibleHeading = computed(() =>
 </template>
 
 <style scoped>
+/* Same row height as the race controls header (2.75rem buttons) so this
+   heading lines up with the race heading in the next column. */
 .panel-heading {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
   margin: 0 0 0.5rem;
   font-size: 1rem;
   font-weight: 650;
