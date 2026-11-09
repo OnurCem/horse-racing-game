@@ -30,6 +30,8 @@ export interface RoundResult {
   readonly finishingOrder: readonly {
     readonly position: number
     readonly horseId: number
+    /** Real milliseconds from the start of the round to this horse's finish. */
+    readonly finishTimeMs: number
   }[]
 }
 

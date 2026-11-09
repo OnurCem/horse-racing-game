@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { NARROW_LAYOUT_QUERY, useMatchMedia } from '../../composables/useMatchMedia'
+import { formatRaceTime } from '../../domain/formatRaceTime'
 import type { Horse, RoundResult } from '../../domain/types'
 
 const props = defineProps<{
@@ -102,14 +103,15 @@ const expandAll = (round: number): void => {
             <thead>
               <tr>
                 <th scope="col">Position</th>
-                <th scope="col">Horse</th>
+                <th scope="col" class="col-horse">Horse</th>
                 <th scope="col">Name</th>
+                <th scope="col" class="col-time">Time</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="row in visibleRows(group)" :key="row.position">
                 <td>{{ row.position }}</td>
-                <td>
+                <td class="col-horse">
                   <span
                     v-if="horsesById.get(row.horseId)"
                     class="color-swatch"
@@ -118,6 +120,7 @@ const expandAll = (round: number): void => {
                   #{{ row.horseId }}
                 </td>
                 <td>{{ horsesById.get(row.horseId)?.name ?? '—' }}</td>
+                <td class="col-time">{{ formatRaceTime(row.finishTimeMs) }}</td>
               </tr>
             </tbody>
           </table>
@@ -205,6 +208,24 @@ const expandAll = (round: number): void => {
     box-sizing: border-box;
     height: 44px;
   }
+}
+
+/* Keep the swatch beside the number now that the Time column takes width. */
+.results-table .col-horse {
+  white-space: nowrap;
+}
+
+@media (max-width: 359px) {
+  .results-table th,
+  .results-table td {
+    padding-inline: 0.3rem;
+  }
+}
+
+.results-table .col-time {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .results-table th {

@@ -119,6 +119,7 @@ export interface FinishPlacement {
   readonly position: number
   readonly horseId: number
   readonly lane: number
+  readonly finishTimeMs: number
 }
 
 /** Rank by finish time; break ties by lower lane number. */
@@ -134,6 +135,7 @@ export function rankByFinishTime(simulation: RoundSimulation): FinishPlacement[]
     position: index + 1,
     horseId: lane.horseId,
     lane: lane.lane,
+    finishTimeMs: lane.finishTimeMs,
   }))
 }
 

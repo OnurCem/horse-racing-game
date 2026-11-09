@@ -33,6 +33,7 @@ function toRoundResult(simulation: RoundSimulation): RoundResult {
   const finishingOrder = rankByFinishTime(simulation).map((row) => ({
     position: row.position,
     horseId: row.horseId,
+    finishTimeMs: row.finishTimeMs,
   }))
 
   return {
