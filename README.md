@@ -9,7 +9,7 @@ A responsive browser game: generate a six-round schedule from a roster of 20 hor
 1. Open the app. Twenty horses load automatically with stable numbers 1–20.
 2. Click **Generate** to draw ten horses per round for distances 1,200–2,200 m.
 3. Click **Start** to run all six rounds in order. **Pause** / **Resume** freezes and continues the current race.
-4. Results appear after every round; the game ends with **Race complete** after round six.
+4. **Round time** under the controls shows the current round's elapsed time. Results appear after every round with each horse's finish time; the game ends with **Race complete** after round six.
 5. **Generate** during **Ready**, **Paused**, or **Complete** builds a new schedule from the same roster and clears prior results.
 
 ## Scripts
@@ -52,17 +52,18 @@ Builds made with `VITE_ENABLE_TEST_HOOKS=1` accept `?seed=` for a deterministic 
 
 `npm run profile` builds the production bundle (no test hooks), serves it, and runs `scripts/profile-race.mjs` in the pinned Playwright container. For each CPU throttle rate it starts round 1, samples every frame for 4 s, then pauses and resumes.
 
-**Conditions (7 Nov 2026):** Headless Chromium 141.0.7390.37 from `mcr.microsoft.com/playwright:v1.56.1-noble`, Docker on an Apple Silicon Mac (4 arm64 cores), 390 × 844 viewport at 3× device scale with touch, CPU throttling through the DevTools protocol (`Emulation.setCPUThrottlingRate`).
+**Conditions (9 Nov 2026):** Headless Chromium 141.0.7390.37 from `mcr.microsoft.com/playwright:v1.56.1-noble`, Docker on an Apple Silicon Mac (4 arm64 cores), 390 × 844 viewport at 3× device scale with touch, CPU throttling through the DevTools protocol (`Emulation.setCPUThrottlingRate`).
 
 | CPU throttle | Frame p50 / p95 / max | Frames > 25 ms | Long animation frames | Layouts in 4 s | Style recalcs in 4 s | Pause → frame | Resume → frame |
 | ------------ | --------------------- | -------------- | --------------------- | -------------- | -------------------- | ------------- | -------------- |
-| 1×           | 16.7 / 16.8 / 16.8 ms | 0 of 281       | 0                     | 1 (0.1 ms)     | 244                  | 25 ms         | 30 ms          |
-| 4×           | 16.7 / 16.8 / 33.3 ms | 1 of 279       | 1                     | 1 (1.0 ms)     | 245                  | 21 ms         | 21 ms          |
-| 6×           | 16.7 / 16.8 / 16.8 ms | 0 of 284       | 1                     | 1 (1.4 ms)     | 246                  | 20 ms         | 33 ms          |
+| 1×           | 16.7 / 16.7 / 16.8 ms | 0 of 280       | 0                     | 4 (1.2 ms)     | 244                  | 18 ms         | 30 ms          |
+| 4×           | 16.7 / 16.7 / 16.8 ms | 0 of 282       | 1                     | 5 (3.2 ms)     | 245                  | 23 ms         | 19 ms          |
+| 6×           | 16.7 / 16.7 / 16.8 ms | 0 of 284       | 1                     | 5 (8.0 ms)     | 246                  | 30 ms         | 23 ms          |
 
 **Findings**
 
-- The race holds 60 fps at every throttle rate. Movement causes no repeated layout: one layout in the whole 4 s, with only transforms changing per frame. The roughly 60 style recalculations per second are the transform updates themselves.
-- The long animation frame at 4× and 6× (100–170 ms) is the Generate render, which builds the schedule and draws the ten lanes just before Start. In one of two repeat runs, a single ~50 ms frame also appeared mid-race at both rates; it did not repeat within the round.
+- The race holds 60 fps at every throttle rate. Only transforms change per frame, for both the horses and the round timer's digits; the roughly 60 style recalculations per second are those transform updates. The 4–5 layouts in 4 s are the screen-reader copy of the timer, which updates once per second.
+- **Round timer.** A first version wrote the time as text every frame. Any text change forces a layout pass, so it ran 241 layouts in 4 s (75–188 ms of layout work, depending on throttle), and `contain: strict` on the value did not reduce it. Each digit is now a 0–9 strip in a clipped one-character box, moved with `translateY` only when that digit changes, which brought layouts back to 4–5. The visible digits are `aria-hidden`; a visually hidden `role="timer"` element (implicit `aria-live="off"`) carries the value, updated once per second while running and exactly when the clock stops.
+- The long animation frame at 4× and 6× is the Generate render, which builds the schedule and draws the ten lanes just before Start. In earlier runs during development, a single 33–50 ms frame occasionally appeared mid-race; it did not repeat within the round.
 - Pause and resume reach the screen within about two frames (20–33 ms, measured from the click to the second frame after it), and horse positions stay fixed while paused.
 - Limits: headless Chromium in Docker composites in software and caps animation frames at 60 Hz, and CPU throttling doesn't model a phone's GPU or thermal throttling. Check on a real mid-range phone before relying on these numbers for older devices.
