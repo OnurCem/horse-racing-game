@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import RaceControls from '../controls/RaceControls.vue'
+import RaceTimer from '../controls/RaceTimer.vue'
 import ResultsPanel from '../results/ResultsPanel.vue'
 import RosterPanel from '../roster/RosterPanel.vue'
 import SchedulePanel from '../schedule/SchedulePanel.vue'
@@ -12,7 +13,7 @@ import { useReducedMotion } from '../../composables/useReducedMotion'
 const store = useGameStore()
 const { roster, schedule, status, activeRound, activeRoundIndex, results } = storeToRefs(store)
 
-const { frameProgress } = useRaceRunner()
+const { frameProgress, onFrame } = useRaceRunner()
 const prefersReducedMotion = useReducedMotion()
 </script>
 
@@ -29,17 +30,19 @@ const prefersReducedMotion = useReducedMotion()
         :results="results"
       />
       <RosterPanel class="area-roster" :roster="roster" />
-      <RaceControls
-        class="area-controls"
-        :status="status"
-        :active-round="activeRound"
-        :schedule-length="schedule.length"
-        :active-round-index="activeRoundIndex"
-        @generate="store.generateSchedule()"
-        @start="store.start()"
-        @pause="store.pause()"
-        @resume="store.resume()"
-      />
+      <div class="area-controls">
+        <RaceControls
+          :status="status"
+          :active-round="activeRound"
+          :schedule-length="schedule.length"
+          :active-round-index="activeRoundIndex"
+          @generate="store.generateSchedule()"
+          @start="store.start()"
+          @pause="store.pause()"
+          @resume="store.resume()"
+        />
+        <RaceTimer :subscribe="onFrame" />
+      </div>
       <RaceTrack
         class="area-track"
         :status="status"

@@ -102,7 +102,13 @@ describe('useGameStore', () => {
       store.syncFromClock()
       expect(store.results).toHaveLength(round)
       expect(store.results[round - 1]!.round).toBe(round)
-      expect(store.results[round - 1]!.finishingOrder).toHaveLength(10)
+      const order = store.results[round - 1]!.finishingOrder
+      expect(order).toHaveLength(10)
+      // Times rise with position, and the last one matches the round's end.
+      order.slice(1).forEach((row, i) => {
+        expect(row.finishTimeMs).toBeGreaterThanOrEqual(order[i]!.finishTimeMs)
+      })
+      expect(order[9]!.finishTimeMs).toBe(simulation!.lastFinishTimeMs)
 
       if (round < 6) {
         time.advance(DEFAULT_INTER_ROUND_HOLD_MS)
