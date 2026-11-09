@@ -27,6 +27,26 @@ watch(
   { immediate: true },
 )
 
+/** Round number of the highlighted row (next up or running), or null when there is none. */
+const activeRound = computed(() => {
+  if (props.status !== 'ready' && props.status !== 'running' && props.status !== 'paused') {
+    return null
+  }
+  return props.schedule[props.activeRoundIndex]?.round ?? null
+})
+
+// Open the active round's entrants whenever a new round becomes active (including
+// after regenerating). Users can still collapse it or open another row by hand.
+watch(
+  [() => props.schedule, activeRound],
+  ([, round]) => {
+    if (round !== null) {
+      expandedRound.value = round
+    }
+  },
+  { immediate: true },
+)
+
 const collapsibleHeading = computed(() =>
   props.schedule.length === 0 ? 'Schedule' : `Schedule · ${props.schedule.length} rounds`,
 )
@@ -55,7 +75,12 @@ const collapsibleHeading = computed(() =>
 </template>
 
 <style scoped>
+/* Same row height as the race controls header (2.75rem buttons) so this
+   heading lines up with the race heading in the next column. */
 .panel-heading {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
   margin: 0 0 0.5rem;
   font-size: 1rem;
   font-weight: 650;
